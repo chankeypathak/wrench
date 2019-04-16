@@ -1,0 +1,12 @@
+Being a fork of https://github.com/tylertreat/bench this library has the following changes:
+- Publisher and subscribers are separated
+- Publisher send async where possible and a timestamp is prepended to every message
+- Subscribers read the timestamp inside the message and compare it to a current timestamp to derive latency
+- Latencies are persisted to files - one per subscriber
+- Added small tools to convert latency files into CSV and/or aggregrate the contents
+- Added an additional implementation of a Kafka connector library
+- Added NOOP requester to test performance of the tool itself
+- Ability to specify request rate schedules via CSV files
+- Ability to select content of sent messages. Default provides all zeros and random data. Extensible by user.
+- Can determine and consider clock skew if publisher and subscriber runs on different machines
+- Lots and lots of refactorings
