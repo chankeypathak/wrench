@@ -1,4 +1,4 @@
-# ![Image](wrench.svg) wrench #
+# ![Image](wrench.svg) wrench - Workload-optimized and Re-engineered bench #
 
 This is a fork of https://github.com/tylertreat/bench. For changes see [here](CHANGES.md).
 
@@ -11,8 +11,8 @@ Code to run benchmarks against several Message Queues. Currently supported are t
 
 For easier usage this code ships with several executables that can be found in the `cmd` folder. The most important one is `benchmark` to execute just that.
 
-# Usage #
 ## benchmark ##
+### Usage ###
 ```
 $ benchmark --help
 Usage of benchmark:
