@@ -1,4 +1,4 @@
-# wrench ![Image](wrench.svg)#
+# ![Image](wrench.svg) wrench #
 
 This is a fork of https://github.com/tylertreat/bench. For changes see [here](CHANGES.md).
 
