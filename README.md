@@ -1,4 +1,5 @@
 # ![Image](wrench.svg) wrench - Workload-optimized and Re-engineered bench #
+###### Icon attribution: heb@Wikimedia Commons (mail) [[CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0)] ######
 
 This is a fork of https://github.com/tylertreat/bench. For changes see [here](CHANGES.md).
 
