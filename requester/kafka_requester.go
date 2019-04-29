@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	timestampLength = 8
+	TimestampLength = 8
 )
 
 var initConfigOnce sync.Once
