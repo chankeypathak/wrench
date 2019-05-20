@@ -106,7 +106,7 @@ Please use the following reference if you want to cite this project:
 
 ---
 
-Manuel Coenen, ChristophWagner, Alexander Echler, and Sebastian Frischbier.
+Manuel Coenen, Christoph Wagner, Alexander Echler and Sebastian Frischbier.
 2019. Poster: Benchmarking Financial Data Feed Systems. In DEBS
 ’19: The 13th ACM International Conference on Distributed and Event-based
 Systems (DEBS ’19), June 24–28, 2019, Darmstadt, Germany. ACM, New York,
