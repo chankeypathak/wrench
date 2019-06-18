@@ -1,13 +1,13 @@
-package requester
+package connector
 
 import (
 	"fmt"
 	"strconv"
 	"time"
 
+	"github.com/nats-io/go-nats"
 	"github.com/vwdsrc/wrench"
 	"github.com/vwdsrc/wrench/config"
-	"github.com/nats-io/go-nats"
 )
 
 // NATSConnectorFactory implements ConnectorFactory by creating a Requester

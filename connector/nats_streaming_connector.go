@@ -1,13 +1,13 @@
-package requester
+package connector
 
 import (
 	"fmt"
 	"strconv"
 
+	nats "github.com/nats-io/go-nats"
+	stan "github.com/nats-io/go-nats-streaming"
 	"github.com/vwdsrc/wrench"
 	"github.com/vwdsrc/wrench/config"
-	nats "github.com/nats-io/go-nats"
-	"github.com/nats-io/go-nats-streaming"
 )
 
 // NATSStreamingConnectorFactory implements RequesterFactory by creating a

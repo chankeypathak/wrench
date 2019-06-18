@@ -2,9 +2,7 @@ package wrench
 
 import (
 	"context"
-	"encoding/binary"
 	"math"
-	"strconv"
 	"time"
 
 	"github.com/vwdsrc/wrench/config"
@@ -14,9 +12,9 @@ import (
 // defaultBurst is the default burst setting for rate limiter
 const defaultBurst = 1000
 
-// publisherConnection performs a system benchmark by issuing requests at a
+// publisherController performs a system benchmark by issuing requests at a
 // specified rate and capturing the latency distribution.
-type publisherConnection struct {
+type publisherController struct {
 	publisher           Publisher
 	fullThrottle        bool
 	successTotal        uint64
@@ -31,10 +29,10 @@ type publisherConnection struct {
 	config.Options
 }
 
-// newPublisherConnection creates a connectionBenchmark which runs a system
+// newPublisherController creates a publisherController which runs a system
 // benchmark using the given Publisher and Options.
-func newPublisherConnection(publisher Publisher, opts *config.Options) *publisherConnection {
-	return &publisherConnection{
+func newPublisherController(publisher Publisher, opts *config.Options) *publisherController {
+	return &publisherController{
 		publisher:    publisher,
 		fullThrottle: (len(opts.RequestRates) == 1 && opts.RequestRates[0].RequestRate == -1),
 		Options:      *opts,
@@ -42,7 +40,7 @@ func newPublisherConnection(publisher Publisher, opts *config.Options) *publishe
 }
 
 // setup prepares the publisherConnection for running and inits the underlying Publisher.
-func (c *publisherConnection) setup() error {
+func (c *publisherController) setup() error {
 	c.successTotal = 0
 	c.errorTotal = 0
 	c.measuredThroughputs = make([]float64, len(c.RequestRates))
@@ -52,7 +50,7 @@ func (c *publisherConnection) setup() error {
 	return c.publisher.Setup()
 }
 
-func (c *publisherConnection) initLimiter(r config.PublishRateChange) {
+func (c *publisherController) initLimiter(r config.PublishRateChange) {
 	requestRate := r.RequestRate
 	if requestRate > 0 {
 		b := int(c.Burst)
@@ -75,13 +73,13 @@ func (c *publisherConnection) initLimiter(r config.PublishRateChange) {
 }
 
 // teardown cleans up any benchmark resources.
-func (c *publisherConnection) teardown() error {
+func (c *publisherController) teardown() error {
 	return c.publisher.Teardown()
 }
 
 // run the benchmark and return the result. Result contains an error if
 // something went wrong along the way.
-func (c *publisherConnection) run() *result {
+func (c *publisherController) run() *result {
 	var err error
 	if c.fullThrottle {
 		c.elapsed, err = c.runFullThrottle()
@@ -91,28 +89,16 @@ func (c *publisherConnection) run() *result {
 	return &result{summary: c.summarize(), err: err}
 }
 
-func (c *publisherConnection) generatePayload(payload int64) *[]byte {
+func (c *publisherController) generatePayload(payload int64) *[]byte {
 	var b []byte
-	if c.Options.Records != nil {
-		r := c.Options.Records[c.counter]
-		c.counter = (c.counter + 1) % c.recordCount
-		if c.Options.DataMode == "parsed" {
-			tsj := "{\"timestamp\":" + strconv.FormatInt(int64(payload), 10) + "," + string(r)[1:]
-			//tsj := "{\"timestamp\":" + strconv.FormatInt(int64(payload), 10) + ",\"a\":1}"
-			b = []byte(tsj)
-		} else {
-			b = make([]byte, len(r))
-			copy(b, r)
-			binary.LittleEndian.PutUint64(b, uint64(payload))
-		}
-	} else {
-		b = make([]byte, c.PayloadSize)
-		binary.LittleEndian.PutUint64(b, uint64(payload))
-	}
+	r := c.Options.Records[c.counter]
+	c.counter = (c.counter + 1) % c.recordCount
+	copy(b, r)
+	b = c.Options.RecordProvider.InjectTimestamp(b, payload)
 	return &b
 }
 
-func (c *publisherConnection) getStartMsg() *[]byte {
+func (c *publisherController) getStartMsg() *[]byte {
 	pubsPerTopic := c.NumPubs / c.NumTopics
 	incrementLimitID := c.NumPubs % c.NumTopics
 	if c.publisher.GetID() < incrementLimitID {
@@ -122,11 +108,11 @@ func (c *publisherConnection) getStartMsg() *[]byte {
 	return c.generatePayload(msg)
 }
 
-func (c *publisherConnection) getStopMsg() *[]byte {
+func (c *publisherController) getStopMsg() *[]byte {
 	return c.generatePayload(-1 * int64(c.publisher.GetID()+1))
 }
 
-func (c *publisherConnection) startRequestRateCycling() {
+func (c *publisherController) startRequestRateCycling() {
 	r := c.RequestRates[0]
 	c.rateChangeDone = make(chan struct{})
 	c.initLimiter(r)
@@ -151,7 +137,7 @@ func (c *publisherConnection) startRequestRateCycling() {
 
 // runRateLimited runs the benchmark by attempting to issue the configured
 // number of requests per second.
-func (c *publisherConnection) runRateLimited() (time.Duration, error) {
+func (c *publisherController) runRateLimited() (time.Duration, error) {
 	if err := c.publisher.Publish(c.getStartMsg()); err != nil {
 		return 0, err
 	}
@@ -192,7 +178,7 @@ func (c *publisherConnection) runRateLimited() (time.Duration, error) {
 }
 
 // runFullThrottle runs the benchmark without a limit on requests per second.
-func (c *publisherConnection) runFullThrottle() (time.Duration, error) {
+func (c *publisherController) runFullThrottle() (time.Duration, error) {
 	if err := c.publisher.Publish(c.getStartMsg()); err != nil {
 		return 0, err
 	}
@@ -220,7 +206,7 @@ func (c *publisherConnection) runFullThrottle() (time.Duration, error) {
 }
 
 // summarize returns a Summary of the last benchmark run.
-func (c *publisherConnection) summarize() *Summary {
+func (c *publisherController) summarize() *Summary {
 	return &Summary{
 		Pub: &PubSummary{
 			SuccessTotal:                c.successTotal,

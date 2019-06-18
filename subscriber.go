@@ -1,17 +1,16 @@
 package wrench
 
 import (
-	"encoding/binary"
 	"log"
 	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
 
-	"github.com/vwdsrc/wrench/config"
-	"github.com/vwdsrc/wrench/utils"
-	"github.com/vwdsrc/wrench/latency"
 	"github.com/codahale/hdrhistogram"
+	"github.com/vwdsrc/wrench/config"
+	"github.com/vwdsrc/wrench/latency"
+	"github.com/vwdsrc/wrench/utils"
 )
 
 const (
@@ -95,42 +94,7 @@ func (s *BaseSubscriber) handleSignalMessage(payload int64) {
 // and put it to hdrhistogram. It also returns the calculated latency for further usage.
 func (s *BaseSubscriber) RecordLatency(msg *[]byte) {
 	now := time.Now()
-	var sent int64
-	if s.opts.DataMode == "parsed" {
-		//var v map[string]interface{}
-		//json.Unmarshal(*msg, &v)
-		//sent = int64(v["timestamp"].(float64))
-		msgd := *msg
-		index1 := 13
-		index2 := 13
-		comma := byte(',')
-		minus := byte('-')
-		neg := false
-		for i := index1; i < index1+20; i++ {
-			if msgd[i] == minus {
-				neg = true
-				index1 += 1
-			} else if msgd[i] == comma {
-				//sent, _ = strconv.ParseInt(string(msgd[index1:i]), 10, 64)
-				index2 = i
-				break
-			}
-		}
-
-		base := int64(1)
-		for i := index2 - 1; i >= index1; i-- {
-			num := int64(msgd[i]) - 48
-			sent += num * base
-			base *= 10
-		}
-
-		if neg {
-			sent = -1 * sent
-		}
-
-	} else {
-		sent = int64(binary.LittleEndian.Uint64(*msg))
-	}
+	sent := s.opts.RecordProvider.GetTimestamp(*msg)
 	if sent < 0 {
 		s.handleSignalMessage(sent)
 		return
@@ -141,8 +105,8 @@ func (s *BaseSubscriber) RecordLatency(msg *[]byte) {
 	err := s.successHistogram.RecordValue(latency)
 	s.mu.Unlock()
 	utils.CheckErr(err)
-	s.received = atomic.AddUint64(&s.received, 1)
-	s.bytesTotal = atomic.AddUint64(&s.bytesTotal, uint64(len(*msg)))
+	atomic.AddUint64(&s.received, 1)
+	atomic.AddUint64(&s.bytesTotal, uint64(len(*msg)))
 	s.latencyWriter.WriteSimple(uint32((nowNano-s.startNanos)/minRecordableLatencyNS), uint32(latency/minRecordableLatencyNS))
 }
 

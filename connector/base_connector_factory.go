@@ -1,14 +1,14 @@
-package requester
+package connector
 
 import "sync"
 
 // BaseConnectorFactory contains underlying common methods for all ConnectorFactory implementations
 type BaseConnectorFactory struct {
-	URLs                        []string
-	pubMu                       sync.Mutex
-	subMu                       sync.Mutex
-	publisherConnectionCounter  uint64
-	subscriberConnectionCounter uint64
+	URLs                       []string
+	pubMu                      sync.Mutex
+	subMu                      sync.Mutex
+	publisherConrollerCounter  uint64
+	subscriberConrollerCounter uint64
 }
 
 // GetNextPublisherIP returns the next IP for a publisher to connect to
@@ -16,8 +16,8 @@ type BaseConnectorFactory struct {
 func (b *BaseConnectorFactory) GetNextPublisherIP() string {
 	b.pubMu.Lock()
 	defer b.pubMu.Unlock()
-	index := b.publisherConnectionCounter % uint64(len(b.URLs))
-	b.publisherConnectionCounter++
+	index := b.publisherConrollerCounter % uint64(len(b.URLs))
+	b.publisherConrollerCounter++
 	return b.URLs[index]
 }
 
@@ -26,7 +26,7 @@ func (b *BaseConnectorFactory) GetNextPublisherIP() string {
 func (b *BaseConnectorFactory) GetNextSubscriberIP() string {
 	b.subMu.Lock()
 	defer b.subMu.Unlock()
-	index := uint64(len(b.URLs)) - 1 - b.subscriberConnectionCounter%uint64(len(b.URLs))
-	b.subscriberConnectionCounter++
+	index := uint64(len(b.URLs)) - 1 - b.subscriberConrollerCounter%uint64(len(b.URLs))
+	b.subscriberConrollerCounter++
 	return b.URLs[index]
 }

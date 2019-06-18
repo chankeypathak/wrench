@@ -1,6 +1,4 @@
-/*
-package wrench provides a generic framework for performing latency benchmarks.
-*/
+// package wrench provides a generic framework for performing latency benchmarks.
 package wrench
 
 import (
@@ -20,8 +18,8 @@ import (
 // specified rate and capturing the latency distribution. The request rate is
 // divided across the number of configured connections.
 type Benchmark struct {
-	publishers  []*publisherConnection
-	subscribers []*subscriberConnection
+	publishers  []*publisherController
+	subscribers []*subscriberController
 	config.Options
 }
 
@@ -78,12 +76,12 @@ func initRequestRates(o *config.Options) {
 	o.RequestRates = requestRates
 }
 
-func initSourceData(o *config.Options) [][]byte {
+func initSourceData(o *config.Options) (config.RecordProvider, [][]byte) {
 	provider := recordprovider.GetProvider(o.DataMode)
 	if provider == nil {
 		panic("Unsupported DataMode " + o.DataMode)
 	}
-	return provider.GetRecords(o)
+	return provider, provider.GetRecords(o)
 }
 
 // NewBenchmark creates a Benchmark which runs a system benchmark using the
@@ -97,18 +95,18 @@ func NewBenchmark(factory ConnectorFactory, o *config.Options) *Benchmark {
 
 	if o.NumPubs > 0 {
 		initRequestRates(o)
-		o.Records = initSourceData(o)
+		o.RecordProvider, o.Records = initSourceData(o)
 	}
 
 	err := DetermineClockSkew(o)
 	utils.CheckErr(err)
 
-	publishers := make([]*publisherConnection, o.NumPubs)
+	publishers := make([]*publisherController, o.NumPubs)
 	for i := uint64(0); i < o.NumPubs; i++ {
-		publishers[i] = newPublisherConnection(factory.GetPublisher(i), o)
+		publishers[i] = newPublisherController(factory.GetPublisher(i), o)
 	}
 
-	subscribers := make([]*subscriberConnection, o.NumSubs)
+	subscribers := make([]*subscriberController, o.NumSubs)
 	for i := uint64(0); i < o.NumSubs; i++ {
 		subscribers[i] = newSubscriberConnection(factory.GetSubscriber(i), o)
 	}
@@ -137,7 +135,7 @@ func (b *Benchmark) Run() (*Summary, error) {
 			return nil, err
 		}
 		wgPub.Add(1)
-		go func(pc *publisherConnection) {
+		go func(pc *publisherController) {
 			<-start
 			pubResults <- pc.run()
 			pc.teardown()
@@ -151,7 +149,7 @@ func (b *Benchmark) Run() (*Summary, error) {
 			return nil, err
 		}
 		wgSub.Add(1)
-		go func(sc *subscriberConnection) {
+		go func(sc *subscriberController) {
 			<-start
 			subResults <- sc.result()
 			sc.teardown()

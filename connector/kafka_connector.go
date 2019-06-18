@@ -1,12 +1,12 @@
-package requester
+package connector
 
 import (
 	"sync"
 	"time"
 
+	"github.com/Shopify/sarama"
 	"github.com/vwdsrc/wrench"
 	"github.com/vwdsrc/wrench/config"
-	"github.com/Shopify/sarama"
 )
 
 const (

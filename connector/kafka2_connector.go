@@ -1,13 +1,13 @@
-package requester
+package connector
 
 import (
 	"log"
 
-	"github.com/vwdsrc/wrench"
-	"github.com/vwdsrc/wrench/config"
 	"github.com/Shopify/sarama"
 	"github.com/optiopay/kafka"
 	"github.com/optiopay/kafka/proto"
+	"github.com/vwdsrc/wrench"
+	"github.com/vwdsrc/wrench/config"
 )
 
 // Kafka2ConnectorFactory implements ConnectorFactory by creating a Requester

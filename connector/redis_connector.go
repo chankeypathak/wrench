@@ -1,9 +1,9 @@
-package requester
+package connector
 
 import (
+	"github.com/garyburd/redigo/redis"
 	"github.com/vwdsrc/wrench"
 	"github.com/vwdsrc/wrench/config"
-	"github.com/garyburd/redigo/redis"
 )
 
 // RedisPubSubConnectorFactory implements ConnectorFactory by creating a
