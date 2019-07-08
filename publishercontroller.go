@@ -90,9 +90,9 @@ func (c *publisherController) run() *result {
 }
 
 func (c *publisherController) generatePayload(payload int64) *[]byte {
-	var b []byte
 	r := c.Options.Records[c.counter]
 	c.counter = (c.counter + 1) % c.recordCount
+	b := make([]byte, len(r))
 	copy(b, r)
 	b = c.Options.RecordProvider.InjectTimestamp(b, payload)
 	return &b
