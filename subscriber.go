@@ -85,6 +85,7 @@ func (s *BaseSubscriber) handleSignalMessage(payload int64) {
 			s.startNanos = s.start.UnixNano()
 		})
 	} else {
+		log.Printf("payload: %d, stopids: %d", payload, len(s.stopIds))
 		index := ((-payload) - 1) % int64(len(s.stopIds))
 		s.stopIds[index] = payload
 	}

@@ -61,6 +61,12 @@ func getConnectorFactory(o *config.Options) wrench.ConnectorFactory {
 			Channel:              o.Topic,
 		}
 
+	case "pulsar":
+		return &connector.PulsarConnectorFactory{
+			BaseConnectorFactory: connector.BaseConnectorFactory{URLs: urls},
+			Topic:                o.Topic,
+		}
+
 	case "noop":
 		return &connector.NOOPConnectorFactory{}
 

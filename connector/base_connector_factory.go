@@ -7,8 +7,8 @@ type BaseConnectorFactory struct {
 	URLs                       []string
 	pubMu                      sync.Mutex
 	subMu                      sync.Mutex
-	publisherConrollerCounter  uint64
-	subscriberConrollerCounter uint64
+	publisherControllerCounter  uint64
+	subscriberControllerCounter uint64
 }
 
 // GetNextPublisherIP returns the next IP for a publisher to connect to
@@ -16,8 +16,8 @@ type BaseConnectorFactory struct {
 func (b *BaseConnectorFactory) GetNextPublisherIP() string {
 	b.pubMu.Lock()
 	defer b.pubMu.Unlock()
-	index := b.publisherConrollerCounter % uint64(len(b.URLs))
-	b.publisherConrollerCounter++
+	index := b.publisherControllerCounter % uint64(len(b.URLs))
+	b.publisherControllerCounter++
 	return b.URLs[index]
 }
 
@@ -26,7 +26,7 @@ func (b *BaseConnectorFactory) GetNextPublisherIP() string {
 func (b *BaseConnectorFactory) GetNextSubscriberIP() string {
 	b.subMu.Lock()
 	defer b.subMu.Unlock()
-	index := uint64(len(b.URLs)) - 1 - b.subscriberConrollerCounter%uint64(len(b.URLs))
-	b.subscriberConrollerCounter++
+	index := uint64(len(b.URLs)) - 1 - b.subscriberControllerCounter%uint64(len(b.URLs))
+	b.subscriberControllerCounter++
 	return b.URLs[index]
 }
