@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"runtime"
+	"strconv"
 
 	"github.com/vwdsrc/wrench"
 	"github.com/vwdsrc/wrench/config"
@@ -141,7 +142,7 @@ func (k *pulsarSubscriber) Setup(opts *config.Options) error {
 
 	consumerOpts := pulsar.ConsumerOptions{
 		Topic:            k.topic,
-		SubscriptionName: "my-subscription-1",
+		SubscriptionName: k.topic + "-subscription-" + strconv.FormatUint(k.ID, 10),
 		Type:             pulsar.Exclusive,
 		MessageChannel:   msgChannel,
 	}
