@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/nats-io/go-nats"
+	"github.com/nats-io/nats.go"
 	"github.com/vwdsrc/wrench"
 	"github.com/vwdsrc/wrench/config"
 )
